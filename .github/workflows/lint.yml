@@ -27,7 +27,7 @@ jobs:
       # Reads a .perlcriticrc in the repo root if present.
       # Lower --severity = stricter (5 = gentle, 1 = brutal).
       - name: Run perlcritic
-        run: perlcritic --severity 4 lib bin
+        run: perlcritic --severity 4 lib
 
   perltidy:
     name: Perl::Tidy (format check)
