@@ -34,14 +34,9 @@ jobs:
         uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: ${{ matrix.perl }}
-          # Module cache keyed on cpanfile/Makefile.PL is enabled by default
 
       - name: Show Perl config
         run: perl -V
-
-      - name: Install dependencies
-        run: |
-          cpanm --notest --installdeps .
 
       - name: Run tests
         run: prove -lrv t/
