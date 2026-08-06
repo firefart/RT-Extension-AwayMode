@@ -115,7 +115,7 @@ sub _today_iso () {
 
 =head1 AUTHOR
 
-Generated for the rt-holiday project.
+Christian Mehlmauer
 
 =head1 LICENSE AND COPYRIGHT
 
