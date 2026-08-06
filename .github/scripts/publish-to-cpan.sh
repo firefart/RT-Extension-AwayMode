@@ -24,11 +24,13 @@ fi
 
 echo "Publishing RT-Extension-AwayMode $module_version"
 
-# Module::Install's Makefile.PL only writes META.yml/MANIFEST/inc/ in
-# "admin" mode, which requires the real (non-vendored) Module::Install and
-# Module::Install::RTx to be installed -- see CLAUDE.md's "Releasing to
-# CPAN" section.
+# Module::Install's installed inc::Module::Install loader switches into
+# author/admin mode when inc/.author exists. That mode rewrites the vendored
+# inc/ bundle and emits release metadata like META.yml; without it, Makefile.PL
+# stays in user mode and later META validation/upload steps fail.
 cpanm --notest Module::Install Module::Install::RTx CPAN::Uploader
+
+mkdir -p inc/.author
 
 perl Makefile.PL
 
