@@ -119,7 +119,7 @@ Christian Mehlmauer
 
 =head1 LICENSE AND COPYRIGHT
 
-This is free software, licensed under version 2 of the GNU General Public
+This is free software, licensed under version 3 of the GNU General Public
 License.
 
 =cut

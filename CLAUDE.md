@@ -65,6 +65,34 @@ Run from the repo root:
   standalone; verify by structural comparison against the RT core/BPS extension patterns they're
   modeled on (see file-level comments/POD) or by testing on a live instance.
 
+### Releasing to CPAN
+
+`perl Makefile.PL` only writes a `Makefile` (no `META.yml`/`MANIFEST`) unless it runs in
+Module::Install's "admin" mode, which requires the *system* (non-vendored) `Module::Install` and
+`Module::Install::RTx` packages to be installed — `cpanm Module::Install Module::Install::RTx`. In
+admin mode it also refreshes the vendored `inc/` bundle from whatever Module::Install/RTx version
+is installed system-wide, which is intentional (that's how `inc/` gets upgraded) but means an
+admin-mode run can change `inc/**` — review that diff like any other dependency bump.
+
+Release steps, from repo root with RT fully installed (e.g. `RTHOME=/rt-6.0.3`):
+
+1. `perl Makefile.PL` (with `RTHOME` set) — regenerates `Makefile`, `MYMETA.*`, `META.yml`, and
+   `inc/`.
+2. `pod2text lib/RT/Extension/AwayMode.pm README` — Module::Install::RTx's own `readme_from` call
+   (triggered as a side effect of step 1) renders `C<...>` POD codes without quotes, which doesn't
+   match this repo's plain `pod2text` convention; re-run `pod2text` after step 1 to keep `README`
+   consistent.
+3. `make manifest` — regenerates `MANIFEST` from the current file set (respects `MANIFEST.SKIP`).
+4. `make dist` — builds `RT-Extension-AwayMode-<version>.tar.gz`.
+5. Sanity-check before upload: `tar tzf RT-Extension-AwayMode-*.tar.gz | sort` (no `.git`,
+   `.github`, `.claude`, `CLAUDE.md`, or `MYMETA.*` should be present — `MANIFEST.SKIP` excludes
+   them), and validate `META.yml` with `CPAN::Meta->load_file('META.yml')` /
+   `CPAN::Meta::Validator`.
+
+`Makefile`, `MYMETA.*`, `META.*`, and the built `.tar.gz` are gitignored — they're per-release
+build output, not checked in. `MANIFEST` and `inc/` *are* checked in. There is no GPG signing
+(`sign;` was deliberately dropped from `Makefile.PL` — PAUSE doesn't require signed distributions).
+
 ### Architecture
 
 - **Storage**: away state is one `RT::Attribute` per user via the core `Preferences`/
