@@ -15,14 +15,18 @@ ok( !$class->IsAwayForPrefs( {}, $today ), 'empty prefs => not away' );
 ok( !$class->IsAwayForPrefs( { Enabled => 0 }, $today ),
     'disabled, no dates => not away' );
 
-ok( !$class->IsAwayForPrefs(
-        { Enabled => 0, StartDate => '2026-01-01', EndDate => '2026-12-31' }, $today
+ok(
+    !$class->IsAwayForPrefs(
+        { Enabled => 0, StartDate => '2026-01-01', EndDate => '2026-12-31' },
+        $today
     ),
     'disabled, dates cover today => still not away'
 );
 
-ok( $class->IsAwayForPrefs( { Enabled => 1 }, $today ),
-    'enabled, no dates => away indefinitely' );
+ok(
+    $class->IsAwayForPrefs( { Enabled => 1 }, $today ),
+    'enabled, no dates => away indefinitely'
+);
 
 ok( !$class->IsAwayForPrefs(
         { Enabled => 1, StartDate => '2026-09-01' }, $today

@@ -29,13 +29,17 @@ sub Commit ($self) {
     my $ticket = RT::Ticket->new( RT->SystemUser );
     my ( $ok, $msg ) = $ticket->Load( $self->TicketObj->Id );
     unless ($ok) {
-        RT->Logger->error( "AwayMode: could not reload ticket " . $self->TicketObj->Id . ": $msg" );
+        RT->Logger->error( "AwayMode: could not reload ticket "
+            . $self->TicketObj->Id
+            . ": $msg" );
         return 0;
     }
 
     my ( $set_ok, $set_msg ) = $ticket->SetOwner( RT->Nobody->Id, 'Set' );
     unless ($set_ok) {
-        RT->Logger->error( "AwayMode: could not reassign ticket " . $ticket->Id . " to Nobody: $set_msg" );
+        RT->Logger->error( "AwayMode: could not reassign ticket "
+            . $ticket->Id
+            . " to Nobody: $set_msg" );
         return 0;
     }
 
@@ -46,7 +50,9 @@ sub Commit ($self) {
 
     my ( $comment_ok, $comment_msg ) = $ticket->Comment( Content => $comment );
     unless ($comment_ok) {
-        RT->Logger->error( "AwayMode: could not add comment to ticket " . $ticket->Id . ": $comment_msg" );
+        RT->Logger->error( "AwayMode: could not add comment to ticket "
+            . $ticket->Id
+            . ": $comment_msg" );
     }
 
     return 1;
