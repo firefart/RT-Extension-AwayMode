@@ -1,0 +1,55 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  perlcritic:
+    name: Perl::Critic
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: '5.42'
+
+      - name: Install Perl::Critic
+        run: cpanm --notest Perl::Critic
+
+      # Reads a .perlcriticrc in the repo root if present.
+      # Lower --severity = stricter (5 = gentle, 1 = brutal).
+      - name: Run perlcritic
+        run: perlcritic --severity 4 lib bin
+
+  perltidy:
+    name: Perl::Tidy (format check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: '5.42'
+
+      - name: Install Perl::Tidy
+        run: cpanm --notest Perl::Tidy
+
+      # Rewrites files in place (no backup), then fails if anything changed.
+      # Uses .perltidyrc in the repo root if present.
+      - name: Check formatting
+        run: |
+          find lib bin t -type f \( -name '*.pl' -o -name '*.pm' -o -name '*.t' \) \
+            -print0 | xargs -0 --no-run-if-empty perltidy -b -bext='/'
+          git diff --exit-code || {
+            echo "::error::Code is not tidy. Run perltidy locally and commit the result.";
+            exit 1;
+          }

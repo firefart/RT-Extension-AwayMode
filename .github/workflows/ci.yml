@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same ref
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Perl ${{ matrix.perl }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        perl: ['5.36', '5.38', '5.40', '5.42']
+        include:
+          # Sanity-check the newest Perl on macOS too
+          - os: macos-latest
+            perl: '5.42'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}
+          # Module cache keyed on cpanfile/Makefile.PL is enabled by default
+
+      - name: Show Perl config
+        run: perl -V
+
+      - name: Install dependencies
+        run: |
+          cpanm --notest --installdeps .
+
+      - name: Run tests
+        run: prove -lrv t/
