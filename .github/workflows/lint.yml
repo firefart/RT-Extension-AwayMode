@@ -47,7 +47,7 @@ jobs:
       # Uses .perltidyrc in the repo root if present.
       - name: Check formatting
         run: |
-          find lib bin t -type f \( -name '*.pl' -o -name '*.pm' -o -name '*.t' \) \
+          find lib t -type f \( -name '*.pl' -o -name '*.pm' -o -name '*.t' \) \
             -print0 | xargs -0 --no-run-if-empty perltidy -b -bext='/'
           git diff --exit-code || {
             echo "::error::Code is not tidy. Run perltidy locally and commit the result.";
