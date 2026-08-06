@@ -1,0 +1,45 @@
+name: Publish to CPAN
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cpan-publish-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and upload to PAUSE
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      # Makefile.PL's RTx() call needs a real, fully-installed RT to
+      # configure, which no stock GitHub-hosted runner has. Instead of
+      # building RT from source in CI, this reuses a published image that
+      # already has RT 6.0.3 installed; the build itself runs as root
+      # inside that container (see .github/scripts/publish-to-cpan.sh),
+      # bind-mounting the checkout so the resulting dist tarball lands
+      # back on the runner's filesystem.
+      - name: Build, test, and publish to PAUSE
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          PAUSE_USERNAME: ${{ secrets.PAUSE_USERNAME }}
+          PAUSE_PASSWORD: ${{ secrets.PAUSE_PASSWORD }}
+        run: |
+          docker run --rm \
+            --user root \
+            -v "$PWD":/workspace \
+            -w /workspace \
+            -e RTHOME=/opt/rt \
+            -e RELEASE_TAG \
+            -e PAUSE_USERNAME \
+            -e PAUSE_PASSWORD \
+            firefart/requesttracker:latest \
+            bash .github/scripts/publish-to-cpan.sh

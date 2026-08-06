@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository purpose
 
-This repository *is* `RT-Extension-AwayMode`, a Perl plugin for **Request Tracker (RT) 6.0.3** that
+This repository _is_ `RT-Extension-AwayMode`, a Perl plugin for **Request Tracker (RT) 6.0.3** that
 auto-reassigns tickets away from users on holiday. It's configured with three custom subagents
 (`.claude/agents/`) specialized for RT development.
 
@@ -18,7 +18,7 @@ agent types are only exposed to the Agent tool outside of plan mode; while plann
 
 - **rt-docs** — Answers questions about RT's REST API, configuration, installation/upgrade steps,
   admin features, permissions, and customization (scrips, templates, custom fields, workflows) by
-  fetching and citing the official docs at https://docs.bestpractical.com/rt/6.0.3/. Use for "how
+  fetching and citing the official docs at <https://docs.bestpractical.com/rt/6.0.3/>. Use for "how
   does RT do X" questions.
 - **rt-source** — Answers questions that require reading actual RT source code (exact module
   behavior, permission/scrip/API implementation, config defaults, class hierarchies). Maintains a
@@ -58,7 +58,7 @@ Run from the repo root:
   — confirms `etc/initialdata` parses (it's executed via `do`, not `require`, so it deliberately has
   no `use strict`, matching RT core's own `etc/initialdata`).
 - `perl Makefile.PL` — bundled `inc/` (Module::Install + RTx) is vendored so this runs, but RTx
-  needs a *fully installed* RT (a generated `RT_Config.pm` defining `$RT::LocalPath`) to locate
+  needs a _fully installed_ RT (a generated `RT_Config.pm` defining `$RT::LocalPath`) to locate
   itself — a bare source checkout like `~/.cache/rt-source/rt` isn't enough. This step can only be
   completed on a real RT 6.0.3 host.
 - Mason files (`html/Prefs/AwayMode.html`, the `PrivilegedMainNav` callback) can't be executed
@@ -68,7 +68,7 @@ Run from the repo root:
 ### Releasing to CPAN
 
 `perl Makefile.PL` only writes a `Makefile` (no `META.yml`/`MANIFEST`) unless it runs in
-Module::Install's "admin" mode, which requires the *system* (non-vendored) `Module::Install` and
+Module::Install's "admin" mode, which requires the _system_ (non-vendored) `Module::Install` and
 `Module::Install::RTx` packages to be installed — `cpanm Module::Install Module::Install::RTx`. In
 admin mode it also refreshes the vendored `inc/` bundle from whatever Module::Install/RTx version
 is installed system-wide, which is intentional (that's how `inc/` gets upgraded) but means an
@@ -90,8 +90,29 @@ Release steps, from repo root with RT fully installed (e.g. `RTHOME=/rt-6.0.3`):
    `CPAN::Meta::Validator`.
 
 `Makefile`, `MYMETA.*`, `META.*`, and the built `.tar.gz` are gitignored — they're per-release
-build output, not checked in. `MANIFEST` and `inc/` *are* checked in. There is no GPG signing
+build output, not checked in. `MANIFEST` and `inc/` _are_ checked in. There is no GPG signing
 (`sign;` was deliberately dropped from `Makefile.PL` — PAUSE doesn't require signed distributions).
+
+#### Automated publishing (`.github/workflows/publish.yml`)
+
+Publishing a GitHub Release (`release: published`) runs the steps above automatically and uploads
+the result to PAUSE via `.github/scripts/publish-to-cpan.sh`. The tag name (minus an optional
+leading `v`) must exactly match `$VERSION` in `lib/RT/Extension/AwayMode.pm`, or the workflow fails
+before building anything.
+
+A stock GitHub-hosted runner has no RT install, so the build itself doesn't run directly on the
+runner — it runs as root inside `docker run firefart/requesttracker:latest` (a published image,
+RT 6.0.3 at `/opt/rt`), with the checkout bind-mounted in. That image has no `git`, which is why
+`actions/checkout` still happens on the plain runner beforehand rather than via a job-level
+`container:`. Uploading uses `cpan-upload` (from `CPAN::Uploader`) with credentials written to a
+throwaway `~/.pause` inside the container (never passed on the command line), read from the
+`PAUSE_USERNAME`/`PAUSE_PASSWORD` repo secrets.
+
+If `firefart/requesttracker:latest` is rebuilt with a different RT version or base image, re-verify
+the release script still works — in particular that `cpanm`-installed packages land somewhere on
+`@INC` for the container's default user (they need to land under a system path; a non-root user
+whose `cpanm` falls back to a per-user `local::lib` under `$HOME` won't have `Module::Install`'s
+admin-mode bootstrap file on `@INC`, which is why the workflow runs the container `--user root`).
 
 ### Architecture
 
