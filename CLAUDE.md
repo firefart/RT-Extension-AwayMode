@@ -131,13 +131,13 @@ admin-mode bootstrap file on `@INC`, which is why the workflow runs the containe
 - **Trigger**: `lib/RT/Condition/OwnerAway.pm` (an `RT::Condition` subclass) is applicable when a
   ticket has a real owner who is currently away; it's registered against
   `ApplicableTransTypes => 'Correspond,Comment'` in `etc/initialdata`. RT filters on that DB column
-  (`RT::Scrip` line ~618) *before* loading the condition module, so `$AwayModeTransactionTypes` can
+  (`RT::Scrip` line ~618) _before_ loading the condition module, so `$AwayModeTransactionTypes` can
   only narrow that set, never widen it — and existing installs need the one-time
   `SetApplicableTransTypes` tweak documented under UPGRADING in the POD (re-running `make initdb`
   would duplicate the scrip).
 - **Config**: `etc/AwayMode_Config.pm` ships the defaults for `$AwayModeTransactionTypes`
   (`['Correspond','Comment']`) and `$AwayModeIgnorePrivilegedComments` (`0`). RT loads
-  `*_Config.pm` from plugin `etc/` dirs (`RT::Config::Configs`) *after* `RT_SiteConfig.pm`, and a
+  `*_Config.pm` from plugin `etc/` dirs (`RT::Config::Configs`) _after_ `RT_SiteConfig.pm`, and a
   non-site file can't override a site-set option — it only logs a "has been ignored" warning. The
   `unless defined $Foo` guard on each `Set` (same trick as BPS `RT-Extension-AutomaticAssignment`)
   avoids that warning. Config files are `require`d from within `package RT`, so bare `$Foo` in them
@@ -146,11 +146,11 @@ admin-mode bootstrap file on `@INC`, which is why the workflow runs the containe
 - **Effect**: `lib/RT/Action/OwnerAwayReassign.pm` (an `RT::Action` subclass) reloads the ticket as
   `RT->SystemUser` (to bypass the replying user's ACLs), sets `Owner` to `RT->Nobody`, and adds an
   internal `Comment` (not `Correspond`). Since comments now also match the condition, the loop
-  guard is the ordering: `SetOwner(Nobody)` happens *before* the `Comment`, so by the time that
+  guard is the ordering: `SetOwner(Nobody)` happens _before_ the `Comment`, so by the time that
   comment's transaction runs scrips the ticket has no real owner and the condition returns 0. Note
-  `RT_System` is created via `_BootstrapCreate` and is *not* in the Privileged group, so
+  `RT_System` is created via `_BootstrapCreate` and is _not_ in the Privileged group, so
   `$AwayModeIgnorePrivilegedComments` is not what stops the loop. `etc/initialdata` wires condition
-  + action into one Scrip.
+  - action into one Scrip.
 - **UI**: `html/Prefs/AwayMode.html` is a new self-service page (RT's component-root overlay serves
   it at `/Prefs/AwayMode.html`), modeled on BPS `RT::Extension::Hotkeys`' own `/Prefs/*.html`
   pattern. It's linked into the Settings menu via
