@@ -1,0 +1,56 @@
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2026-08-07 10:30+0200\n"
+"Last-Translator: Eduardo Domínguez Vázquez <eduardo.dominguez@uib.es>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: html/Callbacks/RT-Extension-AwayMode/autohandler/Default:9
+msgid "Away Mode is active for your account. New replies on tickets you own will be reassigned to Nobody."
+msgstr "El Mode d'Absència s'ha activat per la seva compta. Els tiquets seus que rebin qualque resposta es reassignaran a l'usuari Nobody."
+
+#. $prefs->{'EndDate'}
+#: html/Callbacks/RT-Extension-AwayMode/autohandler/Default:10
+msgid "You're expected back %1."
+msgstr "S'espera el vostre retorn el dia %1."
+
+#: html/Callbacks/RT-Extension-AwayMode/Elements/Header/PrivilegedMainNav:6 html/Prefs/AwayMode.html:6 html/Prefs/AwayMode.html:46
+msgid "Away Mode"
+msgstr "Mode d'Absència"
+
+#: html/Prefs/AwayMode.html:10
+msgid "Away Mode is currently ACTIVE."
+msgstr "El Mode d'Absència està actualment ACTIU."
+
+#: html/Prefs/AwayMode.html:11
+msgid "New replies to tickets you own will be reassigned to Nobody, with a comment noting you're away."
+msgstr "Els tiquets seus que rebin qualque resposta es reassignaran a l'usuari Nobody, amb un comentari indicant de la seva absència."
+
+#: html/Prefs/AwayMode.html:13
+msgid "Away Mode is currently not active."
+msgstr "El Mode d'Absència actualment no està actiu."
+
+#: html/Prefs/AwayMode.html:23
+msgid "I am away/on holiday"
+msgstr "Estic absent/vacances"
+
+#: html/Prefs/AwayMode.html:27
+msgid "Start date (optional)"
+msgstr "Data inicial (opcional)"
+
+#: html/Prefs/AwayMode.html:32
+msgid "End date (optional)"
+msgstr "Data final (opcional)"
+
+#: html/Prefs/AwayMode.html:37
+msgid "Leave both dates blank to stay away for as long as the checkbox above is on, or set one or both to bound the away window (inclusive). Dates are matched against your account's local date."
+msgstr "Deixi ambdues dates en blanc per indicar la seva absència mentre la casella anterior estigui marcada, o fixi una o ambdues dates per delimitar l'interval de la seva absència (ambdues dates estan incloses). Les dates es referenciaran amb l'hora local del seu compte."
+
+#: html/Prefs/AwayMode.html:67
+msgid "End date can't be before start date."
+msgstr "La data final no pot ser anterior a la inicial."
+
+#: html/Prefs/AwayMode.html:76
+msgid "Away Mode preferences updated."
+msgstr "S'han actualitzat les preferències del Mode d'Absència."
