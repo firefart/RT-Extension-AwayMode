@@ -2,7 +2,7 @@ use v5.36;
 
 package RT::Extension::AwayMode;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
