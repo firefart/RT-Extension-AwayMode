@@ -13,10 +13,14 @@ RT::Extension::AwayMode - Automatically hand off tickets while an owner is away
 This extension lets any user flag themselves as "away" (on holiday, out of
 office, ...) on their own Preferences page, optionally scoped to a start
 and/or end date. While a user's away flag is active, any new reply
-(Correspond transaction) on a ticket they own causes the ticket to be
-reassigned to Nobody, with an internal comment explaining why. Because
-unowned tickets are visible to the whole queue/team, this ensures tickets
-aren't silently stuck waiting on someone who is on holiday.
+(Correspond transaction) from someone else on a ticket they own causes the
+ticket to be reassigned to Nobody, with an internal comment explaining why.
+Because unowned tickets are visible to the whole queue/team, this ensures
+tickets aren't silently stuck waiting on someone who is on holiday.
+
+Replies written by the away owner themselves don't trigger the handoff: if
+they are answering the ticket, they are clearly still working on it, so it
+stays assigned to them.
 
 While their away flag is active, the user also sees a prominent warning
 banner on every page of RT, reminding them (and anyone looking over their
