@@ -26,6 +26,10 @@ While their away flag is active, the user also sees a prominent warning
 banner on every page of RT, reminding them (and anyone looking over their
 shoulder) that Away Mode is on.
 
+Users who left on holiday without setting the flag themselves aren't stuck:
+an administrator can set (or clear) away mode on anyone's behalf from that
+user's admin page.
+
 =head1 RT VERSION
 
 Works with RT 6.0.3.
@@ -69,6 +73,14 @@ Users manage their own away status from Settings -> Away Mode
 start/end dates. With no dates set, away mode applies for as long as the
 checkbox stays on. With dates set, away mode is only active while today
 falls within the (inclusive) start/end range.
+
+Administrators can do the same for any other user from Admin -> Users ->
+(select a user) -> Settings -> Away Mode (F</Admin/Users/AwayMode.html>),
+which is useful when somebody leaves without setting the flag themselves.
+That page requires the C<AdminUsers> right (on top of the C<ShowConfigTab>
+right RT already requires for the whole F</Admin/> area) and writes exactly
+the same preference the self-service page does, so the two stay
+interchangeable.
 
 =head1 METHODS
 
