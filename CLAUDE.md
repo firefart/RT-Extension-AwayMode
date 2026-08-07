@@ -38,7 +38,8 @@ version, tell the relevant agent explicitly.
 ## RT-Extension-AwayMode
 
 A user can flag themselves "away/holiday" (optionally scoped to a start/end date) on their own
-Preferences page. While that flag is active, any new reply (Correspond transaction) on a ticket
+Preferences page. While that flag is active, any new reply (Correspond transaction) or comment
+(Comment transaction — `rt-mailgate --action comment` records incoming mail that way) on a ticket
 they own gets reassigned to Nobody with an internal comment — unowned tickets are visible to the
 whole queue/team, so nothing sits stuck on someone's holiday. Full description and setup steps are
 in `README` (generated from the POD in `lib/RT/Extension/AwayMode.pm` — edit the POD, not the
@@ -53,7 +54,8 @@ Run from the repo root:
 - `perl -I ~/.cache/rt-source/rt/lib -c lib/RT/Condition/OwnerAway.pm` and same for
   `lib/RT/Action/OwnerAwayReassign.pm` — these `use base 'RT::Condition'`/`'RT::Action'`, so they
   need RT's lib on `@INC` to syntax-check; the cached clone above works for this.
-- `prove t/` — runs the pure away-window boundary-logic tests (no RT/DB required).
+- `prove -l t/` — runs the pure away-window boundary-logic and transaction-type-filter tests
+  (no RT/DB required).
 - `perl -e 'package RT::Handle; our (@ScripConditions, @ScripActions, @Scrips); do "./etc/initialdata" or die $@;'`
   — confirms `etc/initialdata` parses (it's executed via `do`, not `require`, so it deliberately has
   no `use strict`, matching RT core's own `etc/initialdata`).
@@ -122,15 +124,33 @@ admin-mode bootstrap file on `@INC`, which is why the workflow runs the containe
   `{ Enabled => 0|1, StartDate => 'YYYY-MM-DD'|'', EndDate => 'YYYY-MM-DD'|'' }`.
 - **Away-window logic** lives in `lib/RT/Extension/AwayMode.pm` as a pure function
   (`IsAwayForPrefs`) with no RT dependency, wrapped by `IsUserAway($UserObj)` for real use — this
-  split is what makes `t/away_window.t` runnable without RT installed.
+  split is what makes `t/away_window.t` runnable without RT installed. Same split for the
+  transaction-type filter: pure `IsHandledTransactionType($type, $configured)` (tested in
+  `t/transaction_types.t`), wrapped by `IsHandledTransaction($TxnObj)` which reads config and, for
+  comments, the creator's `Privileged` flag (`RT->PrivilegedUsers->HasMember`, no ACL involved).
 - **Trigger**: `lib/RT/Condition/OwnerAway.pm` (an `RT::Condition` subclass) is applicable when a
   ticket has a real owner who is currently away; it's registered against
-  `ApplicableTransTypes => 'Correspond'` in `etc/initialdata`, so it only evaluates on replies.
+  `ApplicableTransTypes => 'Correspond,Comment'` in `etc/initialdata`. RT filters on that DB column
+  (`RT::Scrip` line ~618) _before_ loading the condition module, so `$AwayModeTransactionTypes` can
+  only narrow that set, never widen it — and existing installs need the one-time
+  `SetApplicableTransTypes` tweak documented under UPGRADING in the POD (re-running `make initdb`
+  would duplicate the scrip).
+- **Config**: `etc/AwayMode_Config.pm` ships the defaults for `$AwayModeTransactionTypes`
+  (`['Correspond','Comment']`) and `$AwayModeIgnorePrivilegedComments` (`0`). RT loads
+  `*_Config.pm` from plugin `etc/` dirs (`RT::Config::Configs`) _after_ `RT_SiteConfig.pm`, and a
+  non-site file can't override a site-set option — it only logs a "has been ignored" warning. The
+  `unless defined $Foo` guard on each `Set` (same trick as BPS `RT-Extension-AutomaticAssignment`)
+  avoids that warning. Config files are `require`d from within `package RT`, so bare `$Foo` in them
+  is `$RT::Foo` — which is also what `RT::Config::Set` assigns, so the guard actually sees
+  site-config values.
 - **Effect**: `lib/RT/Action/OwnerAwayReassign.pm` (an `RT::Action` subclass) reloads the ticket as
   `RT->SystemUser` (to bypass the replying user's ACLs), sets `Owner` to `RT->Nobody`, and adds an
-  internal `Comment` (not `Correspond`) — using `Comment` means the resulting transaction can never
-  re-match the `Correspond`-only condition above, so there's no scrip loop by construction.
-  `etc/initialdata` wires condition + action into one Scrip.
+  internal `Comment` (not `Correspond`). Since comments now also match the condition, the loop
+  guard is the ordering: `SetOwner(Nobody)` happens _before_ the `Comment`, so by the time that
+  comment's transaction runs scrips the ticket has no real owner and the condition returns 0. Note
+  `RT_System` is created via `_BootstrapCreate` and is _not_ in the Privileged group, so
+  `$AwayModeIgnorePrivilegedComments` is not what stops the loop. `etc/initialdata` wires condition
+  - action into one Scrip.
 - **UI**: `html/Prefs/AwayMode.html` is a new self-service page (RT's component-root overlay serves
   it at `/Prefs/AwayMode.html`), modeled on BPS `RT::Extension::Hotkeys`' own `/Prefs/*.html`
   pattern. It's linked into the Settings menu via
