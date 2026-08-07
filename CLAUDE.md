@@ -137,6 +137,23 @@ admin-mode bootstrap file on `@INC`, which is why the workflow runs the containe
   `html/Callbacks/RT-Extension-AwayMode/Elements/Header/PrivilegedMainNav`, which hooks RT core's
   `PrivilegedMainNav` callback point (`lib/RT/Interface/Web/MenuBuilder.pm`) the same way BPS
   `RT::Extension::Hotkeys` hooks its own menu callback.
+- **Admin UI**: `html/Admin/Users/AwayMode.html` is the admin-side twin of that page, letting
+  anyone with `AdminUsers` set another user's away state (core precedent for an admin page editing
+  another user's preference: `share/html/Admin/Users/MyRT.html`). It loads the target
+  `RT::User` from the `id` arg with the admin's CurrentUser; `RT::User::SetPreferences` enforces
+  `AdminUsers` itself via `CurrentUserCanModify`, and the page re-checks that right up front
+  because `/Admin/autohandler` only gates the tree on the coarser `ShowConfigTab`.
+- **Shared editor**: both pages render and save through `html/Elements/AwayModeEditor`, a
+  two-method (`:show` / `:process`) component modeled on RT core's `/Widgets/SavedSearch` — so the
+  stored preference shape and the date parsing live in exactly one place. `:process` is called as
+  `my @results = $m->comp('/Elements/AwayModeEditor:process', ...)` and returns result messages.
+- **Admin menu tab**: `html/Callbacks/RT-Extension-AwayMode/Elements/Tabs/Privileged` adds the tab
+  under the per-user Settings submenu. Note RT 6.0.3 has _no_ per-user equivalent of the
+  `PrivilegedQueue` callback that `_BuildAdminPageMenu` fires for queues, so this uses the generic
+  `Privileged` callback at the end of `BuildPageNav` instead — it runs after `_BuildAdminPageMenu`,
+  so `PageMenu()->child('settings')` already exists. The user id comes from `$DECODED_ARGS->{id}`
+  (not the callback's `ARGSRef`, which carries `/Elements/Tabs`' own args, not the request's),
+  matching how core's own per-user block finds it.
 - **Banner**: `html/Callbacks/RT-Extension-AwayMode/autohandler/Default` hooks the `Default`
   callback on `CallbackPage => '/autohandler'` (fired from `RT::Interface::Web::HandleRequest` in
   `lib/RT/Interface/Web.pm`, right after `$m->notes('SystemWarnings')` is reset to `[]` for the

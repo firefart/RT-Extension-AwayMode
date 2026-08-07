@@ -2,7 +2,7 @@ use v5.36;
 
 package RT::Extension::AwayMode;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
@@ -13,14 +13,22 @@ RT::Extension::AwayMode - Automatically hand off tickets while an owner is away
 This extension lets any user flag themselves as "away" (on holiday, out of
 office, ...) on their own Preferences page, optionally scoped to a start
 and/or end date. While a user's away flag is active, any new reply
-(Correspond transaction) on a ticket they own causes the ticket to be
-reassigned to Nobody, with an internal comment explaining why. Because
-unowned tickets are visible to the whole queue/team, this ensures tickets
-aren't silently stuck waiting on someone who is on holiday.
+(Correspond transaction) from someone else on a ticket they own causes the
+ticket to be reassigned to Nobody, with an internal comment explaining why.
+Because unowned tickets are visible to the whole queue/team, this ensures
+tickets aren't silently stuck waiting on someone who is on holiday.
+
+Replies written by the away owner themselves don't trigger the handoff: if
+they are answering the ticket, they are clearly still working on it, so it
+stays assigned to them.
 
 While their away flag is active, the user also sees a prominent warning
 banner on every page of RT, reminding them (and anyone looking over their
 shoulder) that Away Mode is on.
+
+Users who left on holiday without setting the flag themselves aren't stuck:
+an administrator can set (or clear) away mode on anyone's behalf from that
+user's admin page.
 
 =head1 RT VERSION
 
@@ -65,6 +73,14 @@ Users manage their own away status from Settings -> Away Mode
 start/end dates. With no dates set, away mode applies for as long as the
 checkbox stays on. With dates set, away mode is only active while today
 falls within the (inclusive) start/end range.
+
+Administrators can do the same for any other user from Admin -> Users ->
+(select a user) -> Settings -> Away Mode (F</Admin/Users/AwayMode.html>),
+which is useful when somebody leaves without setting the flag themselves.
+That page requires the C<AdminUsers> right (on top of the C<ShowConfigTab>
+right RT already requires for the whole F</Admin/> area) and writes exactly
+the same preference the self-service page does, so the two stay
+interchangeable.
 
 =head1 METHODS
 
