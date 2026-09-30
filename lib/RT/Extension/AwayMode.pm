@@ -5,7 +5,7 @@ use warnings;
 use feature 'signatures';
 no warnings 'experimental::signatures';
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 # Transaction types that hand a ticket off when its owner is away. Must stay a
 # subset of the ApplicableTransTypes the scrip condition is registered with in
