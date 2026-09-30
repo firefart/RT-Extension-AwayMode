@@ -1,0 +1,9 @@
+# Allow "no warnings 'category';" when it names specific categories rather
+# than disabling warnings wholesale. lib/ uses this for
+# 'experimental::signatures' to support subroutine signatures on Perl
+# versions before 5.36, where the feature is real but not yet stable enough
+# for `use feature 'signatures'` to enable it warning-free on its own. That
+# is the documented, idiomatic way to use signatures pre-5.36 (see perlsub),
+# not the blanket "no warnings;" this policy exists to catch.
+[TestingAndDebugging::ProhibitNoWarnings]
+allow_with_category_restriction = 1
