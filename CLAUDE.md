@@ -76,6 +76,16 @@ admin mode it also refreshes the vendored `inc/` bundle from whatever Module::In
 is installed system-wide, which is intentional (that's how `inc/` gets upgraded) but means an
 admin-mode run can change `inc/**` — review that diff like any other dependency bump.
 
+`Makefile.PL` pins `perl_version '5.02'` explicitly rather than letting `all_from` derive it from
+the `use v5.20;` in `lib/RT/Extension/AwayMode.pm`. `all_from` normalizes that pragma to the string
+`"5.020"`, and admin mode's `Module::Install::Admin::ScanDeps` (reached via RTx's
+`include_deps('YAML::Tiny')`) looks the value up in `%Module::CoreList::version`, whose keys come
+from numeric literals — perl 5.20.0's key stringifies to `"5.02"`, so `"5.020"` is absent and the
+release build dies with `Module::CoreList has no information on perl 5.020`. `"5.02"` is the same
+version (`version->parse("5.02")` is `v5.20.0`) and is a key CoreList has. Any future floor whose
+third digit is 0 (5.30, 5.40, ...) hits the same trap; the old `use v5.36;` normalized to `"5.036"`,
+a real key, so it worked by luck.
+
 Release steps, from repo root with RT fully installed (e.g. `RTHOME=/rt-6.0.3`):
 
 1. `perl Makefile.PL` (with `RTHOME` set) — regenerates `Makefile`, `MYMETA.*`, `META.yml`, and
